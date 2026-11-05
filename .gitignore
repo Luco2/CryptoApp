@@ -33,6 +33,15 @@ Thumbs.db
 # Editor
 .idea/
 *.swp
+.vscode/
+
+# Claude Code / AI assistant config (personal, not needed to run)
+.claude/
+**/.claude/
+CLAUDE.md
+**/CLAUDE.md
+AGENTS.md
+**/AGENTS.md
 
 # Prisma local database
 *.db

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Rule {
+  id        String   @id @default(cuid())
+  asset     String
+  amount    Float
+  frequency String   // "daily" | "weekly" | "monthly"
+  broker    String   // "alpaca" | "coinbase"
+  active    Boolean  @default(true)
+  nextRunAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  trades    Trade[]
+}
+
+model Trade {
+  id         String   @id @default(cuid())
+  ruleId     String?
+  rule       Rule?    @relation(fields: [ruleId], references: [id])
+  asset      String
+  side       String   // "buy" | "sell"
+  qty        Float
+  price      Float
+  total      Float
+  broker     String   // "alpaca" | "coinbase"
+  mode       String   // "paper" | "live"
+  executedAt DateTime @default(now())
+}
+
+model Settings {
+  id              Int     @id @default(1)
+  alpacaKey       String  @default("")
+  alpacaSecret    String  @default("")
+  alpacaPaper     Boolean @default(true)
+  coinbaseKey     String  @default("")
+  coinbaseSecret  String  @default("")
+  coinbasePaper   Boolean @default(true)
+}
+
+model PlaidItem {
+  id              String        @id @default(cuid())
+  accessToken     String
+  itemId          String        @unique
+  institutionName String
+  createdAt       DateTime      @default(now())
+  accounts        BankAccount[]
+}
+
+model BankAccount {
+  id          String            @id @default(cuid())
+  plaidItemId String
+  plaidItem   PlaidItem         @relation(fields: [plaidItemId], references: [id], onDelete: Cascade)
+  accountId   String            @unique
+  name        String
+  mask        String
+  type        String
+  balance     Float             @default(0)
+  updatedAt   DateTime          @updatedAt
+  transfers   FundingTransfer[]
+}
+
+model FundingTransfer {
+  id            String      @id @default(cuid())
+  bankAccountId String
+  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id])
+  broker        String
+  amount        Float
+  status        String      @default("pending")
+  externalId    String?
+  createdAt     DateTime    @default(now())
+}
